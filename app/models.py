@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, Table
+from sqlalchemy.sql import func  # 导入 func 模块
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -18,10 +19,10 @@ class User(Base):
     empid = Column(Integer, primary_key=True, autoincrement=True)  # PK，用户内码
     empcode = Column(String(10), nullable=False)  # 用户工号
     empname = Column(String(15), nullable=False)  # 用户名
-    passwd = Column(String(30), nullable=False)  # 密码密文
+    passwd = Column(String(200), nullable=False)  # 密码密文（加盐加密后的密码）
     sex = Column(Integer, nullable=False, default=1)  # 性别，0男性，1女性
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 使用 func.now() 设置默认值
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
@@ -35,7 +36,7 @@ class Department(Base):
     deptname = Column(String(15), nullable=False)  # 部门名
     deptlocation = Column(String(30))  # 部门地址
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
@@ -49,7 +50,7 @@ class Company(Base):
     compadd = Column(String(30))  # 公司注册地址
     uscicode = Column(String(20))  # 统一社会信用代码
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
@@ -64,7 +65,7 @@ class Menu(Base):
     level = Column(Integer, nullable=False)  # 菜单层级
     sortid = Column(Integer)  # 排序id
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
@@ -77,7 +78,7 @@ class PermissionGroup(Base):
     pgroupname = Column(String(15), nullable=False)  # 权限组名
     desc = Column(String(50))  # 权限组简要说明
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
@@ -88,7 +89,7 @@ class GroupMenu(Base):
     pgroupid = Column(Integer, primary_key=True, nullable=False)  # PK
     menuid = Column(Integer, primary_key=True, nullable=False)  # PK
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
@@ -99,7 +100,7 @@ class UserPermission(Base):
     empid = Column(Integer, primary_key=True, nullable=False)  # PK，用户内码
     pgroupid = Column(Integer, primary_key=True, nullable=False)  # PK,权限组id
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
@@ -115,10 +116,10 @@ class Project(Base):
     sponsorid = Column(Integer, nullable=False)  # 项目发起人
     desc = Column(String(2000))  # 项目说明
     goal = Column(String(1000))  # 项目目标说明
-    approvetime = Column(Date, server_default="sysdate")  # 项目批准/发起时间
+    approvetime = Column(Date, server_default=func.now())  # 项目批准/发起时间
     expectedtime = Column(Date)  # 预期结束时间
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
@@ -128,9 +129,9 @@ class Event(Base):
     __tablename__ = "TBUSEVENT"
     eventid = Column(Integer, primary_key=True, autoincrement=True)  # PK,事件id
     reporter = Column(Integer, nullable=False)  # 事件报告人id
-    reportertime = Column(Date, nullable=False, server_default="sysdate")  # 事件报告时间
+    reportertime = Column(Date, nullable=False, server_default=func.now())  # 事件报告时间
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
@@ -144,7 +145,7 @@ class ProjectEvent(Base):
     depth = Column(Integer, nullable=False)  # 深度数
     parentid = Column(Integer, nullable=False)  # 父节点id
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
@@ -155,7 +156,7 @@ class ProjectMember(Base):
     prjid = Column(Integer, primary_key=True, nullable=False)  # PK，项目id
     empid = Column(Integer, primary_key=True, nullable=False)  # PK，员工id
     createuser = Column(Integer, nullable=False)  # 创建人内码
-    createdate = Column(Date, nullable=False, server_default="sysdate")  # 创建时间
+    createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用

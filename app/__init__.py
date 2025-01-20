@@ -21,7 +21,9 @@ Base.metadata.create_all(bind=engine)
 from .api.v1.user_api import user_bp
 #from .api.v1.event_api import event_bp
 from .api.v1.auth_api import auth_bp
+from .api.v1.init_api import init_bp  # 导入初始化接口
 
 app.register_blueprint(user_bp, url_prefix="/prjeventsys/v1")
 #app.register_blueprint(event_bp, url_prefix="/prjeventsys/v1")
 app.register_blueprint(auth_bp, url_prefix="/prjeventsys/v1")
+app.register_blueprint(init_bp, url_prefix="/prjeventsys/v1")  # 注册初始化接口

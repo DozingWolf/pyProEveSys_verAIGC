@@ -37,3 +37,16 @@ def login(username, encrypted_password, rsa_private_key):
         return False, "Internal server error"
     finally:
         db.close()
+
+def logout():
+    """
+    用户登出逻辑
+    """
+    if "user_id" in session:
+        user_id = session["user_id"]
+        session.pop("user_id", None)
+        logger.info(f"User {user_id} logged out successfully")
+        return True, "Logout successful"
+    else:
+        logger.warning("Logout attempted with no active session")
+        return False, "No active session"

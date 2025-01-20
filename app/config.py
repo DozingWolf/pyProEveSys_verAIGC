@@ -3,10 +3,9 @@ import configparser
 from pathlib import Path
 
 # 获取项目根目录
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent  # 指向 app 目录的上一级（项目根目录）
 
 # 读取 conf.ini 文件
-print(BASE_DIR)
 config = configparser.ConfigParser()
 config.read(os.path.join(BASE_DIR, 'conf.ini'))
 
@@ -30,3 +29,6 @@ class Config:
 
     # AES配置
     AES_KEY = config.get('aes', 'key')
+
+    # BSER_DIR赋值
+    BASE_DIR = BASE_DIR
