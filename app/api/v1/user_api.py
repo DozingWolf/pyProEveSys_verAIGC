@@ -1,41 +1,50 @@
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, request, session, jsonify
 from datetime import datetime
-from loguru import logger
 from app.models import SessionLocal, User
-from app.utils.decorators import login_required, permission_required
+from app.utils.crypto import PasswordService
+from app.schemas.user_schema import UserSchema  # 引入 UserSchema
+from flask_apispec import use_kwargs, marshal_with  # 引入 Flask-APISpec 装饰器
+from loguru import logger
 
 # 创建Blueprint
 user_bp = Blueprint("user", __name__)
 
-@user_bp.route("/users", methods=["GET"])
-@login_required
-@permission_required("view_users")  # 假设需要 "view_users" 权限
-def get_all_users():
-    """
-    查询所有用户信息的接口
-    需要登录且具有 "view_users" 权限
-    """
-    db = SessionLocal()
-    try:
-        # 查询所有用户
-        users = db.query(User).all()
-        user_list = []
-        for user in users:
-            user_list.append({
-                "id": user.id,
-                "username": user.username,
-                "is_active": user.is_active
-            })
-        return jsonify({"users": user_list})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        db.close()
-
 @user_bp.route("/register", methods=["POST"])
-def register():
+@use_kwargs(UserSchema)  # 使用 UserSchema 校验请求参数
+def register(**kwargs):
     """
     用户注册接口
+    ---
+    post:
+      tags:
+        - 用户管理
+      summary: 注册新用户
+      description: 创建一个新用户，并返回用户 ID。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: UserSchema
+      responses:
+        200:
+          description: 用户注册成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+                  user_id:
+                    type: integer
+                    example: 1
+        400:
+          description: 请求参数错误
+        401:
+          description: 未授权访问
+        500:
+          description: 服务器内部错误
     """
     data = request.json
     db = SessionLocal()
@@ -47,26 +56,21 @@ def register():
         # 获取当前登录用户的 empid
         createuser = session["user_id"]
 
-        # 生成随机密码（如果未提供密码）
-        password = data.get("password")
-        if not password:
-            password = PasswordService.generate_random_password()
-
         # 对密码进行加盐加密
-        hashed_password = PasswordService.hash_password(password)
+        hashed_password = PasswordService.hash_password(data["password"])
 
         # 创建用户
         new_user = User(
-            empcode=data.get("empcode"),  # 用户工号
-            empname=data.get("empname"),  # 用户名
+            empcode=data["empcode"],  # 用户工号
+            empname=data["empname"],  # 用户名
             passwd=hashed_password,  # 加密后的密码
-            sex=data.get("sex", 1),  # 性别，默认为1（女性）
+            sex=data["sex"],  # 性别
             createuser=createuser,  # 创建人
             createdate=datetime.now(),  # 创建时间
             modifyuser=createuser,  # 修改人
             modifydate=datetime.now(),  # 修改时间
             status=0,  # 状态位，0正常
-            admin=data.get("admin", 1)  # 管理员标记，默认为1（普通用户）
+            admin=data["admin"]  # 管理员标记
         )
         db.add(new_user)
         db.commit()

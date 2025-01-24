@@ -2,6 +2,8 @@ from flask import Blueprint, session, make_response, jsonify, request
 from PIL import Image, ImageDraw, ImageFont
 import random
 import io
+import string  # 导入 string 模块
+from app.models import SessionLocal,User  # 导入 SessionLocal
 from app.utils.crypto import PasswordService
 from loguru import logger
 from app.auth import login, logout

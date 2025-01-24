@@ -30,5 +30,12 @@ class Config:
     # AES配置
     AES_KEY = config.get('aes', 'key')
 
+    # Flask-APISpec 配置项
+    APISPEC_TITLE = "PrjEventSys API"
+    APISPEC_VERSION = "1.0.0"
+    APISPEC_OPENAPI_VERSION = "3.0.3"
+    APISPEC_SWAGGER_URL = "/swagger/"  # Swagger UI 访问路径
+    APISPEC_SWAGGER_UI_URL = "/swagger-ui/"  # Swagger UI 资源路径
+
     # BSER_DIR赋值
     BASE_DIR = BASE_DIR
