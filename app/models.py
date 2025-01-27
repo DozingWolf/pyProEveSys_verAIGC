@@ -21,6 +21,8 @@ class User(Base):
     empname = Column(String(15), nullable=False)  # 用户名
     passwd = Column(String(200), nullable=False)  # 密码密文（加盐加密后的密码）
     sex = Column(Integer, nullable=False, default=1)  # 性别，0男性，1女性
+    mobile = Column(String(15)) # 中国手机号
+    openid = Column(String(50)) # 微信openid
     createuser = Column(Integer, nullable=False)  # 创建人内码
     createdate = Column(Date, nullable=False, server_default=func.now())  # 使用 func.now() 设置默认值
     modifyuser = Column(Integer)  # 修改人内码
