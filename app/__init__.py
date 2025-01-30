@@ -8,7 +8,7 @@ from loguru import logger
 from .config import Config
 
 # 初始化Flask应用
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../frontend", static_url_path="/static")
 app.config.from_object(Config)
 # 加载配置
 app.config.from_object(Config)

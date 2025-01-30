@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .captcha-image {
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            height: auto;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>登录系统</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="empcode">工号</label>
+                <input type="text" id="empcode" name="empcode" required>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="captcha">验证码</label>
+                <input type="text" id="captcha" name="captcha" required>
+            </div>
+            <img src="/prjeventsys/v1/captcha" alt="验证码" class="captcha-image" id="captchaImage" onclick="refreshCaptcha()">
+            <button type="submit" class="submit-btn">登录</button>
+            <div class="error-message" id="errorMessage"></div>
+        </form>
+    </div>
+
+    <script>
+        // 刷新验证码
+        function refreshCaptcha() {
+            const captchaImage = document.getElementById('captchaImage');
+            captchaImage.src = '/prjeventsys/v1/captcha?' + new Date().getTime(); // 添加时间戳防止缓存
+        }
+
+        // 表单提交事件
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const empcode = document.getElementById('empcode').value;
+            const password = document.getElementById('password').value;
+            const captcha = document.getElementById('captcha').value;
+
+            try {
+                const response = await fetch('/prjeventsys/v1/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ empcode, password, captcha })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(result.message || '登录成功');
+                    window.location.href = '/'; // 跳转到首页
+                } else {
+                    document.getElementById('errorMessage').textContent = result.error || '登录失败';
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = '服务器错误，请稍后再试';
+            }
+        });
+
+        // 页面加载时刷新验证码
+        window.onload = function() {
+            refreshCaptcha();
+        };
+    </script>
+</body>
+</html>

@@ -7,18 +7,21 @@ from loguru import logger
 def login_required(f):
     """
     登录认证装饰器
+
+    功能:
+        验证用户是否已登录，若未登录则返回 401 错误。
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # 检查 Session 中是否存在用户 ID
-        if "user_id" not in session:
-            logger.warning("User not logged in")
-            return jsonify({"error": "Unauthorized"}), 401
+        # 检查 Session 中是否存在登录状态
+        if "login_status" not in session or not session["login_status"]:
+            logger.warning("用户未登录")
+            return jsonify({"error": "未授权"}), 401
 
         # 查询用户是否存在
         db = SessionLocal()
         try:
-            user = db.query(User).filter(User.empid == session["user_id"]).first()  # 使用 empid 作为用户 ID
+            user = db.query(User).filter(User.empid == session["empid"]).first()  # 使用 empid 作为用户内码
             if not user:
                 logger.warning(f"User {session['user_id']} not found")
                 return jsonify({"error": "User not found"}), 404
@@ -35,19 +38,25 @@ def login_required(f):
 def permission_required(permission_name):
     """
     权限校验装饰器
+
+    参数:
+        permission_name (str): 权限名称
+
+    功能:
+        验证用户是否拥有指定权限，若无权限则返回 403 错误。
     """
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            # 检查 Session 中是否存在用户 ID
-            if "user_id" not in session:
-                logger.warning("User not logged in")
-                return jsonify({"error": "Unauthorized"}), 401
+            # 检查 Session 中是否存在登录状态
+            if "login_status" not in session or not session["login_status"]:
+                logger.warning("用户未登录")
+                return jsonify({"error": "未授权"}), 401
 
             db = SessionLocal()
             try:
                 # 查询用户
-                user = db.query(User).filter(User.empid == session["user_id"]).first()  # 使用 empid 作为用户 ID
+                user = db.query(User).filter(User.empid == session["empid"]).first()  # 使用 empid 作为用户内码
                 if not user:
                     logger.warning(f"User {session['user_id']} not found")
                     return jsonify({"error": "User not found"}), 404

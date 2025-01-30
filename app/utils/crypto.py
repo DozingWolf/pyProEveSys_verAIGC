@@ -49,11 +49,13 @@ class PasswordService:
         return private_key, public_key
 
     @staticmethod
-    def encrypt_rsa(plaintext, public_key):
+    def encrypt_rsa(plaintext, public_key_path):
         """
         使用 RSA 公钥加密
         """
         try:
+            with open(public_key_path, 'r') as f:
+                public_key = f.read()
             key = RSA.import_key(public_key)
             cipher = PKCS1_OAEP.new(key)
             encrypted = cipher.encrypt(plaintext.encode('utf-8'))
@@ -62,16 +64,18 @@ class PasswordService:
             raise BusinessError(
                 code=1003,
                 module="PasswordService",
-                input_data={"plaintext": plaintext, "public_key": public_key},
+                input_data={"plaintext": plaintext, "public_key_path": public_key_path},
                 message=f"RSA encryption failed: {str(e)}"
             )
 
     @staticmethod
-    def decrypt_rsa(ciphertext, private_key):
+    def decrypt_rsa(ciphertext, private_key_path):
         """
         使用 RSA 私钥解密
         """
         try:
+            with open(private_key_path, 'r') as f:
+                private_key = f.read()
             key = RSA.import_key(private_key)
             cipher = PKCS1_OAEP.new(key)
             decrypted = cipher.decrypt(base64.b64decode(ciphertext))
@@ -80,6 +84,6 @@ class PasswordService:
             raise BusinessError(
                 code=1004,
                 module="PasswordService",
-                input_data={"ciphertext": ciphertext, "private_key": private_key},
+                input_data={"ciphertext": ciphertext, "private_key_path": private_key_path},
                 message=f"RSA decryption failed: {str(e)}"
             )

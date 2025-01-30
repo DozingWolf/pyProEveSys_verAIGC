@@ -2,7 +2,7 @@ import requests
 
 # 测试初始化管理员用户接口
 def test_init_admin():
-    url = "http://127.0.0.1:5000/prjeventsys/v1/init_admin"
+    url = "http://127.0.0.1:6231/prjeventsys/v1/init_admin"
     response = requests.post(url)
     if response.status_code == 200:
         print("Test passed: Admin user created successfully")

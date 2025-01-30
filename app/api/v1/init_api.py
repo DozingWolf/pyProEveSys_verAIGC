@@ -38,7 +38,10 @@ def init_admin():
         hashed_password = PasswordService.hash_password(password)  # 使用 crypto.py 中的方法
         logger.info(f"Hashed admin password: {hashed_password}")
 
+        from datetime import datetime  # 导入datetime模块
+        
         # 创建管理员用户
+        current_time = datetime.now()
         admin_user = User(
             empid=0,  # 用户内码
             empcode="ADM0000",  # 用户工号
@@ -46,6 +49,9 @@ def init_admin():
             passwd=hashed_password,  # 加盐加密后的密码
             sex=0,  # 性别，0男性
             createuser=0,  # 创建人内码（系统）
+            createdate=current_time,  # 创建时间
+            modifyuser=0,  # 修改人内码（系统）
+            modifydate=current_time,  # 修改时间
             status=0,  # 状态位，0正常
             admin=0  # 管理员标记，0管理员
         )

@@ -24,8 +24,16 @@ class Config:
     LOG_FILE = os.path.join(BASE_DIR, config.get('logging', 'file'))
 
     # RSA配置
-    RSA_PRIVATE_KEY = config.get('rsa', 'private_key')
-    RSA_PUBLIC_KEY = config.get('rsa', 'public_key')
+    RSA_PRIVATE_KEY_PATH = os.path.join(BASE_DIR, config.get('rsa', 'private_key'))
+    RSA_PUBLIC_KEY_PATH = os.path.join(BASE_DIR, config.get('rsa', 'public_key'))
+
+    @staticmethod
+    def load_rsa_keys():
+        with open(Config.RSA_PRIVATE_KEY_PATH, 'r') as f:
+            private_key = f.read()
+        with open(Config.RSA_PUBLIC_KEY_PATH, 'r') as f:
+            public_key = f.read()
+        return private_key, public_key
 
     # AES配置
     AES_KEY = config.get('aes', 'key')
