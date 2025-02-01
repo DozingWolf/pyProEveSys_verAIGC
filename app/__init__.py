@@ -42,11 +42,15 @@ from .api.v1.user_api import user_bp
 #from .api.v1.event_api import event_bp
 from .api.v1.auth_api import auth_bp
 from .api.v1.init_api import init_bp  # 导入初始化接口
+from .api.v1.test_crypto import test_crypto_bp #导入测试接口
 
 app.register_blueprint(user_bp, url_prefix="/api/v1.0/MST")
 
 #app.register_blueprint(event_bp, url_prefix="/prjeventsys/v1")
 app.register_blueprint(auth_bp, url_prefix="/prjeventsys/v1")
 app.register_blueprint(init_bp, url_prefix="/prjeventsys/v1")  # 注册初始化接口
-
+# 注册测试接口蓝图
+app.register_blueprint(test_crypto_bp, url_prefix='/api/v1')
 docs = FlaskApiSpec(app)
+    
+    

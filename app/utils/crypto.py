@@ -1,7 +1,10 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Cipher import PKCS1_OAEP ,PKCS1_v1_5
+from Crypto.Hash import SHA256
 import base64
+import traceback
+from loguru import logger
 from .errors import BusinessError
 
 class PasswordService:
@@ -49,41 +52,67 @@ class PasswordService:
         return private_key, public_key
 
     @staticmethod
-    def encrypt_rsa(plaintext, public_key_path):
+    def encrypt_rsa(plaintext, public_key):
         """
         使用 RSA 公钥加密
+
+        :param plaintext: 待加密的明文字符串
+        :param public_key: RSA 公钥字符串
+        :return: 加密后的 Base64 编码字符串
         """
         try:
-            with open(public_key_path, 'r') as f:
-                public_key = f.read()
+            logger.debug(f"Loaded public key: {public_key}")  # 调试日志
+            logger.debug(f"Loaded private key: {public_key}")  # 调试日志
             key = RSA.import_key(public_key)
-            cipher = PKCS1_OAEP.new(key)
+            cipher = PKCS1_OAEP.new(key,hashAlgo=SHA256)
             encrypted = cipher.encrypt(plaintext.encode('utf-8'))
             return base64.b64encode(encrypted).decode('utf-8')
         except Exception as e:
             raise BusinessError(
                 code=1003,
                 module="PasswordService",
-                input_data={"plaintext": plaintext, "public_key_path": public_key_path},
+                input_data={"plaintext": plaintext, "public_key": public_key},
                 message=f"RSA encryption failed: {str(e)}"
             )
 
     @staticmethod
-    def decrypt_rsa(ciphertext, private_key_path):
+    def decrypt_rsa(ciphertext, private_key):
         """
         使用 RSA 私钥解密
+
+        :param ciphertext: 待解密的 Base64 编码字符串
+        :param private_key: RSA 私钥字符串
+        :return: 解密后的明文字符串
         """
         try:
-            with open(private_key_path, 'r') as f:
-                private_key = f.read()
+            logger.debug(f"Loaded private key: {private_key}")  # 调试日志
+            logger.debug(f"Loaded private key: {private_key}")  # 调试日志
             key = RSA.import_key(private_key)
-            cipher = PKCS1_OAEP.new(key)
-            decrypted = cipher.decrypt(base64.b64decode(ciphertext))
+            cipher = PKCS1_OAEP.new(key, hashAlgo=SHA256)  # 指定哈希算法为 SHA-256
+
+            # 对 Base64 密文进行解码
+            decoded_ciphertext = base64.b64decode(ciphertext)
+            logger.debug(f'pain base64 ciphertext is: {decoded_ciphertext}') # 记录base64解码后的密文
+            logger.debug(f"Decoded ciphertext length: {len(decoded_ciphertext)}")  # 记录密文长度
+            logger.debug(f"Decoded ciphertext (Hex): {decoded_ciphertext.hex()}")  # 记录解码后的十六进制表示
+
+            if len(decoded_ciphertext) != 256:  # 检查密文长度
+                logger.debug("Ciphertext length is incorrect")
+
+            # 解密
+            decrypted = cipher.decrypt(decoded_ciphertext)
+            logger.debug(f"Decrypted text: {decrypted.decode('utf-8')}")
             return decrypted.decode('utf-8')
         except Exception as e:
+            error_traceback = traceback.format_exc()
+            logger.error(f"Decryption error details: {str(e)}\nTraceback:\n{error_traceback}")
             raise BusinessError(
                 code=1004,
                 module="PasswordService",
-                input_data={"ciphertext": ciphertext, "private_key_path": private_key_path},
+                input_data={
+                    "ciphertext": ciphertext,
+                    "private_key": private_key,
+                    "decoded_ciphertext": base64.b64decode(ciphertext).hex()  # 记录解码后的十六进制表示
+                },
                 message=f"RSA decryption failed: {str(e)}"
             )

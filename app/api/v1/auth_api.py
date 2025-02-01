@@ -7,11 +7,11 @@ from app.models import SessionLocal,User  # 导入 SessionLocal
 import configparser
 from app.utils.crypto import PasswordService
 import datetime
+import base64
+from app.config import Config  # 导入配置类
 
-# 加载配置文件
-config = configparser.ConfigParser()
-config.read('conf.ini')
-PRIVATE_KEY = config['rsa']['private_key']
+# 加载 RSA 密钥
+PRIVATE_KEY, PUBLIC_KEY = Config.load_rsa_keys()  # 获取私钥
 from loguru import logger
 from app.auth import login, logout
 from app.utils.decorators import login_required
@@ -54,9 +54,9 @@ def get_captcha():
         captcha_text = generate_captcha_text()
 
         # 对验证码进行加密并存储到 session 中
-        encrypted_captcha = PasswordService.hash_password(captcha_text)
-        session["captcha"] = encrypted_captcha
-
+        #encrypted_captcha = PasswordService.hash_password(captcha_text)
+        #session["captcha"] = encrypted_captcha
+        session["captcha"] = captcha_text
         # 生成验证码图片
         image_buffer = generate_captcha_image(captcha_text)
 
@@ -90,9 +90,9 @@ def login():
             return jsonify({"error": "验证码未生成"}), 400
 
         user_captcha = data.get("captcha")
-        if not user_captcha.lower() != session["captcha"].lower():
-            logger.debug(data.get("captcha"))
-            logger.debug(user_captcha)
+        logger.debug(user_captcha.lower())
+        logger.debug(session["captcha"].lower())
+        if not user_captcha.lower() == session["captcha"].lower():
             return jsonify({"error": "验证码错误"}), 400
 
         # 验证用户是否存在
@@ -103,8 +103,13 @@ def login():
 
         # 验证密码
         encrypted_password = data.get("password")
+        logger.debug('web encrypted password is: ')
+        logger.debug(encrypted_password)
+        logger.debug('============================')
         try:
-                decrypted_password = PasswordService.decrypt_rsa(encrypted_password, PRIVATE_KEY)
+            # 对接收到的Base64密文进行解码
+            encrypted_password_decoded = base64.b64decode(encrypted_password).hex()  # 转换为16进制字符串
+            decrypted_password = PasswordService.decrypt_rsa(encrypted_password_decoded, PRIVATE_KEY)  # 使用密钥字符串
         except Exception as e:
             logger.error(f"RSA解密失败: {e}")
             return jsonify({"error": "密码解密失败"}), 400
