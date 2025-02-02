@@ -132,6 +132,7 @@ class Event(Base):
     eventid = Column(Integer, primary_key=True, autoincrement=True)  # PK,事件id
     reporter = Column(Integer, nullable=False)  # 事件报告人id
     reportertime = Column(Date, nullable=False, server_default=func.now())  # 事件报告时间
+    event = Column(String(2000), nullable=False) # 事件内容
     createuser = Column(Integer, nullable=False)  # 创建人内码
     createdate = Column(Date, nullable=False, server_default=func.now())  # 创建时间
     modifyuser = Column(Integer)  # 修改人内码
