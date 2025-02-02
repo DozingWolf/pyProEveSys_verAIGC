@@ -92,7 +92,10 @@ class PasswordService:
 
             # 对 Base64 密文进行解码
             decoded_ciphertext = base64.b64decode(ciphertext)
-            logger.debug(f'pain base64 ciphertext is: {decoded_ciphertext}') # 记录base64解码后的密文
+            logger.debug(f'pain base64 ciphertext is: {decoded_ciphertext}') # 记录base64转换后的密文
+            decoded_ciphertext = bytes(decoded_ciphertext) # 尝试用bytes来处理uint8array
+            decoded_ciphertext = decoded_ciphertext.decode('utf-8')
+            logger.debug(f'pain base64 ciphertext is: {decoded_ciphertext}') # 记录uint8array转换后的密文
             logger.debug(f"Decoded ciphertext length: {len(decoded_ciphertext)}")  # 记录密文长度
             logger.debug(f"Decoded ciphertext (Hex): {decoded_ciphertext.hex()}")  # 记录解码后的十六进制表示
 

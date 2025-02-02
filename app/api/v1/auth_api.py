@@ -130,6 +130,54 @@ def login():
     finally:
         db.close()
 
+@auth_bp.route("/simple_login", methods=["POST"])
+def simple_login():
+    """
+    简易用户登录接口
+
+    参数:
+        username (str): 用户名
+        captcha (str): 验证码
+        password (str): 密码明文
+
+    返回:
+        dict: 登录结果
+    """
+    try:
+        data = request.json
+        db = SessionLocal()
+
+        # 验证验证码
+        if "captcha" not in session:
+            return jsonify({"error": "验证码未生成"}), 400
+
+        user_captcha = data.get("captcha")
+        if not user_captcha.lower() == session["captcha"].lower():
+            return jsonify({"error": "验证码错误"}), 400
+
+        # 验证用户是否存在
+        empcode = data.get("empcode")
+        user = db.query(User).filter(User.empcode == empcode).first()
+        if not user:
+            return jsonify({"error": "用户不存在"}), 404
+
+        # 验证密码
+        plain_password = data.get("password")
+        if not PasswordService.verify_password(plain_password, user.passwd):
+            return jsonify({"error": "密码错误"}), 401
+
+        # 登录成功，设置 session
+        session["login_status"] = True
+        session["empcode"] = user.empcode
+        session["login_time"] = datetime.datetime.now().isoformat()
+        logger.info(f"用户 {empcode} 登录成功")
+        return jsonify({"message": "登录成功"})
+    except Exception as e:
+        logger.error(f"登录错误: {e}")
+        return jsonify({"error": "服务器内部错误"}), 500
+    finally:
+        db.close()
+
 @auth_bp.route("/logout", methods=["POST"])
 @login_required
 def user_logout():
