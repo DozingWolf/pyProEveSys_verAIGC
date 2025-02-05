@@ -86,26 +86,27 @@ class PasswordService:
         """
         try:
             logger.debug(f"Loaded private key: {private_key}")  # 调试日志
-            logger.debug(f"Loaded private key: {private_key}")  # 调试日志
-            key = RSA.import_key(private_key)
+            key = RSA.import_key(private_key.strip())  # 去掉私钥的多余换行符和空格
             cipher = PKCS1_OAEP.new(key, hashAlgo=SHA256)  # 指定哈希算法为 SHA-256
 
             # 对 Base64 密文进行解码
             decoded_ciphertext = base64.b64decode(ciphertext)
-            logger.debug(f'pain base64 ciphertext is: {decoded_ciphertext}') # 记录base64转换后的密文
-            decoded_ciphertext = bytes(decoded_ciphertext) # 尝试用bytes来处理uint8array
-            decoded_ciphertext = decoded_ciphertext.decode('utf-8')
-            logger.debug(f'pain base64 ciphertext is: {decoded_ciphertext}') # 记录uint8array转换后的密文
-            logger.debug(f"Decoded ciphertext length: {len(decoded_ciphertext)}")  # 记录密文长度
-            logger.debug(f"Decoded ciphertext (Hex): {decoded_ciphertext.hex()}")  # 记录解码后的十六进制表示
+            logger.debug(f'Plain Base64 ciphertext is: {decoded_ciphertext.hex()}')  # 记录Base64转换后的十六进制密文
 
-            if len(decoded_ciphertext) != 256:  # 检查密文长度
-                logger.debug("Ciphertext length is incorrect")
+            # 密文长度检查
+            if len(decoded_ciphertext) != key.size_in_bytes():
+                logger.error(f"Invalid ciphertext length: {len(decoded_ciphertext)}")
+                raise ValueError("Invalid ciphertext length")
 
             # 解密
             decrypted = cipher.decrypt(decoded_ciphertext)
-            logger.debug(f"Decrypted text: {decrypted.decode('utf-8')}")
-            return decrypted.decode('utf-8')
+            try:
+                decrypted_text = decrypted.decode('utf-8')
+            except UnicodeDecodeError:
+                logger.error("Decrypted data is not valid UTF-8")
+                raise
+            logger.debug(f"Decrypted text: {decrypted_text}")
+            return decrypted_text
         except Exception as e:
             error_traceback = traceback.format_exc()
             logger.error(f"Decryption error details: {str(e)}\nTraceback:\n{error_traceback}")

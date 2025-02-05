@@ -107,9 +107,7 @@ def login():
         logger.debug(encrypted_password)
         logger.debug('============================')
         try:
-            # 对接收到的Base64密文进行解码
-            encrypted_password_decoded = base64.b64decode(encrypted_password).hex()  # 转换为16进制字符串
-            decrypted_password = PasswordService.decrypt_rsa(encrypted_password_decoded, PRIVATE_KEY)  # 使用密钥字符串
+            decrypted_password = PasswordService.decrypt_rsa(encrypted_password, PRIVATE_KEY)  # 使用密钥字符串
         except Exception as e:
             logger.error(f"RSA解密失败: {e}")
             return jsonify({"error": "密码解密失败"}), 400
