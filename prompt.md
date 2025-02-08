@@ -90,4 +90,7 @@ AI开始生成
 我根据AI的反馈逐步补全接口设计文档
 ```
 ### 根据接口设计文档要求创建接口代码
-1. 
+**20250207**
+**注意，这里我开始使用vscode的插件cline和cursor，使用这两个工具后文件都是可以直接关联的**
+1. 请根据 @models.py 中的Company类生成用于创建新公司的接口。接口使用marshmallow进行校验，schema对应的代码存储在 @schemas 中，api存储在 @v1 中，需要通过 @decorators.py 中login_required进行保护。接口需要使用blueprint进行管理，注册在 @__init__.py 中，url_prefix为"/api/v1.0/MST"。
+2. 

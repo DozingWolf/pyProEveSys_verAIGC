@@ -45,9 +45,9 @@ from .api.v1.init_api import init_bp  # 导入初始化接口
 #from .api.v1.test_crypto import test_crypto_bp  # 导入测试接口
 from .api.v1.project_api import project_bp  # 导入项目管理接口
 from .api.v1.event_api import event_bp  # 导入事件管理接口
+from .api.v1.company_api import company_bp
 
 app.register_blueprint(user_bp, url_prefix="/api/v1.0/MST")
-
 #app.register_blueprint(event_bp, url_prefix="/prjeventsys/v1")
 app.register_blueprint(auth_bp, url_prefix="/prjeventsys/v1")
 app.register_blueprint(init_bp, url_prefix="/prjeventsys/v1")  # 注册初始化接口
@@ -55,4 +55,6 @@ app.register_blueprint(init_bp, url_prefix="/prjeventsys/v1")  # 注册初始化
 #app.register_blueprint(test_crypto_bp, url_prefix='/api/v1') # 注册测试接口蓝图
 app.register_blueprint(event_bp, url_prefix="/api/v1.0/BUS")  # 注册事件管理接口
 app.register_blueprint(project_bp, url_prefix="/api/v1.0/BUS")  # 注册项目管理接口
+app.register_blueprint(company_bp, url_prefix="/api/v1.0/MST")  # 注册公司管理接口
+
 docs = FlaskApiSpec(app)

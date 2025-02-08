@@ -1,8 +1,43 @@
 from flask import session
+import base64
+from PIL import Image, ImageDraw, ImageFont
+import random
+import io
+import string  # 导入 string 模块
 from .models import SessionLocal, User
 from .utils.crypto import PasswordService
 from .utils.errors import BusinessError
 from loguru import logger
+from app.config import Config  # 导入配置类
+from app.utils.crypto import PasswordService
+
+# 加载 RSA 密钥
+PRIVATE_KEY, PUBLIC_KEY = Config.load_rsa_keys()  # 获取私钥
+
+def generate_captcha_text(length=4):
+    """
+    生成验证码文本（四位大写字母和数字）
+    """
+    characters = string.ascii_uppercase + string.digits  # 大写字母和数字
+    return ''.join(random.choice(characters) for _ in range(length))
+
+def generate_captcha_image(captcha_text):
+    """
+    生成验证码图片
+    """
+    # 创建图片
+    image = Image.new('RGB', (120, 40), color=(255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.load_default()
+
+    # 绘制验证码文本
+    draw.text((10, 10), captcha_text, font=font, fill=(0, 0, 0))
+
+    # 将图片转换为字节流
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    return buffer
 
 def login(username, encrypted_password, rsa_private_key):
     """
