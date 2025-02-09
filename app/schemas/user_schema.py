@@ -55,3 +55,23 @@ class UpdatePasswdSchema(Schema):
     """
     nowpasswd = fields.Str(required=True)  # 当前密码(RSA加密)
     newpasswd = fields.Str(required=True)  # 新密码(RSA加密)
+
+
+class UserQuerySchema(Schema):
+    """
+    用户查询Schema
+    
+    参数:
+    - empcode (str): 用户工号
+    - empname (str): 用户姓名（支持模糊查询）
+    - sex (int): 性别 0-女 1-男
+    - mobile (str): 手机号
+    - status (int): 状态 0-正常 1-停用
+    - admin (int): 是否管理员 0-否 1-是
+    """
+    empcode = fields.Str(required=False)
+    empname = fields.Str(required=False)
+    sex = fields.Int(required=False, validate=validate.OneOf([0, 1]))
+    mobile = fields.Str(required=False, validate=validate_chinese_phone_number)
+    status = fields.Int(required=False, validate=validate.OneOf([0, 1]))
+    admin = fields.Int(required=False, validate=validate.OneOf([0, 1]))

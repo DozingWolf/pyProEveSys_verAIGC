@@ -2,7 +2,7 @@ from flask import Blueprint, request, session, jsonify
 from datetime import datetime
 from app.models import SessionLocal, User
 from app.utils.crypto import PasswordService
-from app.schemas.user_schema import UserSchema, EditUserSchema, UpdatePasswdSchema  # 引入所需Schema
+from app.schemas.user_schema import UserSchema, EditUserSchema, UpdatePasswdSchema, UserQuerySchema  # 引入所需Schema
 from flask import current_app  # 导入current_app以访问配置
 from app.utils.crypto import PasswordService  # 导入密码服务
 
@@ -232,5 +232,67 @@ def edit_user(empid, **kwargs):
         db.rollback()
         logger.error(f"Error updating user: {e}")
         return jsonify({"error": "Internal server error"}), 500
+    finally:
+        db.close()
+
+
+@user_bp.route("/query_users", methods=["POST"])
+@login_required
+@use_kwargs(UserQuerySchema)
+def query_users(**kwargs):
+    """
+    查询用户信息接口
+    ---
+    post:
+      tags:
+        - 用户管理
+      summary: 查询用户信息
+      description: 根据条件查询用户信息，支持组合查询和模糊查询
+      responses:
+        200:
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        500:
+          description: 服务器内部错误
+    """
+    db = SessionLocal()
+    try:
+        query = db.query(User)
+        
+        # 处理查询条件
+        if kwargs.get("empcode"):
+            query = query.filter(User.empcode == kwargs["empcode"])
+        if kwargs.get("empname"):
+            query = query.filter(User.empname.ilike(f"%{kwargs['empname']}%"))
+        if kwargs.get("sex") is not None:
+            query = query.filter(User.sex == kwargs["sex"])
+        if kwargs.get("mobile"):
+            query = query.filter(User.mobile == kwargs["mobile"])
+        if kwargs.get("status") is not None:
+            query = query.filter(User.status == kwargs["status"])
+        if kwargs.get("admin") is not None:
+            query = query.filter(User.admin == kwargs["admin"])
+            
+        users = query.all()
+        
+        return jsonify([{
+            "empid": user.empid,
+            "empcode": user.empcode,
+            "empname": user.empname,
+            "sex": user.sex,
+            "mobile": user.mobile,
+            "status": user.status,
+            "admin": user.admin,
+            "createdate": user.createdate.isoformat() if user.createdate else None
+        } for user in users])
+        
+    except Exception as e:
+        logger.error(f"查询用户信息失败: {e}")
+        return jsonify({"error": "服务器内部错误"}), 500
     finally:
         db.close()

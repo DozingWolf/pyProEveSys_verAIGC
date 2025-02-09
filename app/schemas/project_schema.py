@@ -32,3 +32,22 @@ class ProjectCreateSchema(Schema):
     goal = fields.Str(required=False, validate=validate.Length(max=1000))
     approvetime = fields.Str(required=True, validate=validate_date_format)
     expectedtime = fields.Str(required=True, validate=validate_date_format)
+
+class ProjectUpdateSchema(Schema):
+    """
+    项目信息更新 Schema
+    
+    参数:
+        ownerid (int): 项目负责人ID
+        sponsorid (int): 项目发起人ID
+        desc (str): 项目描述
+        goal (str): 项目目标
+        expectedtime (str): 预期结束时间，格式YYYY-MM-DD
+        status (int): 状态位，0正常，1停用
+    """
+    ownerid = fields.Int(required=False, validate=validate.Range(min=1))
+    sponsorid = fields.Int(required=False, validate=validate.Range(min=1))
+    desc = fields.Str(required=False, validate=validate.Length(max=2000))
+    goal = fields.Str(required=False, validate=validate.Length(max=1000))
+    expectedtime = fields.Str(required=False, validate=validate_date_format)
+    status = fields.Int(required=False, validate=validate.OneOf([0, 1]))

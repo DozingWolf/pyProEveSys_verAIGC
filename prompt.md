@@ -4,6 +4,13 @@
 月之暗面 KIMI
 字节跳动 Marscode
 深度求索 deepseek-v3
+qwen2.5-max
+```
+项目中使用到的工具
+```
+vscode
+    cline插件
+cursor
 ```
 ## prompt清单
 ### 后端编写
@@ -93,4 +100,70 @@ AI开始生成
 **20250207**
 **注意，这里我开始使用vscode的插件cline和cursor，使用这两个工具后文件都是可以直接关联的**
 1. 请根据 @models.py 中的Company类生成用于创建新公司的接口。接口使用marshmallow进行校验，schema对应的代码存储在 @schemas 中，api存储在 @v1 中，需要通过 @decorators.py 中login_required进行保护。接口需要使用blueprint进行管理，注册在 @__init__.py 中，url_prefix为"/api/v1.0/MST"。
-2. 
+2. 请根据 @models.py 中的Company类生成用于查询公司情况的接口。接口使用marshmallow进行校验，schema对应的代码存储在 @schemas 中，api存储在 @v1 中，需要通过 @decorators.py 中login_required进行保护。允许的查询条件是compcode、compname、compadd、uscicode、createuser、createdate、status。允许些查询条件组合使用。其中createdate创建时间应允许进行时间范围查询，compcode、compname、compadd应允许模糊查询。接口需要使用blueprint进行管理，注册在 @__init__.py 中，url_prefix为"/api/v1.0/MST"。
+3. 请根据 @models.py 中的Project类生成用于修改项目信息的接口。接口使用marshmallow进行校验，schema对应的代码存储在 @schemas 中，api存储在 @v1 中，且需要通过 @decorators.py 中login_required进行保护。允许修改的字段为ownerid、sponsorid、desc、goal、expectedtime、status。接口需要使用blueprint进行管理，注册在 @__init__.py 中
+
+## 从AI处学习到的知识
+1. @company_api.py 在这个文件中，你编写的create_company、edit_company函数都没有使用use_kwargs这个装饰器，但是query_companies函数却使用了use_kwargs这个装饰器，请帮我解释一下这是什么原因？那种方式更好？
+
+``` 
+这是一个很好的问题。这两种方式都是处理请求参数的常见方法，它们各有优缺点，我来详细解释一下：
+
+1. **不使用use_kwargs（create_company和edit_company的方式）**：
+   - 手动调用schema.load()来验证和加载数据
+   - 优点：
+     * 更直观，代码流程清晰可见
+     * 可以更灵活地处理异常情况
+     * 可以在验证前后添加自定义逻辑
+   - 缺点：
+     * 代码量稍多
+     * 需要手动处理验证错误
+
+2. **使用use_kwargs（query_companies的方式）**：
+   - 自动处理请求参数的验证和加载
+   - 优点：
+     * 代码更简洁
+     * 自动处理验证错误，返回400响应
+     * 参数直接作为函数参数传入，使用更方便
+   - 缺点：
+     * 对参数处理的控制较弱
+     * 需要额外导入webargs库
+
+**哪种方式更好？**
+
+这取决于具体场景：
+- 对于简单的查询接口（如query_companies），使用use_kwargs更合适，因为它：
+  * 代码更简洁
+  * 自动处理验证错误
+  * 参数直接作为函数参数传入，使用更方便
+
+- 对于创建/修改接口（如create_company和edit_company），手动验证可能更好，因为：
+  * 通常需要更复杂的业务逻辑
+  * 可能需要处理额外的上下文信息（如session中的用户ID）
+  * 需要更灵活的错误处理
+
+**建议的统一方案：**
+
+
+python:app/api/v1/company_api.py
+# 对于查询类接口
+@company_bp.route("/query_companies", methods=["POST"])
+@login_required
+@use_kwargs(CompanyQuerySchema)
+def query_companies(**kwargs):
+    # 直接使用kwargs中的已验证参数
+    pass
+
+# 对于创建/修改类接口
+@company_bp.route("/create_company", methods=["POST"])
+@login_required
+def create_company():
+    try:
+        data = request.json
+        validated_data = CompanyCreateSchema().load(data)
+        # 手动处理业务逻辑
+    except ValidationError as e:
+        return jsonify({"error": "参数验证失败", "details": e.messages}), 400
+
+这种混合使用的方式可以兼顾代码简洁性和灵活性，是当前比较推荐的做法。
+```
