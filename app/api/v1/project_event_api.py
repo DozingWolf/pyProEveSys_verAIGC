@@ -4,6 +4,8 @@ from app.schemas.project_event_schema import ProjectEventCreateSchema
 from app.utils.decorators import login_required, operation_log
 from loguru import logger
 from datetime import datetime
+from app.schemas.project_event_schema import ProjectEventQuerySchema
+from flask_apispec import use_kwargs
 
 # 创建Blueprint
 project_event_bp = Blueprint("project_event", __name__, url_prefix="/api/v1.0/BUS")
@@ -97,6 +99,105 @@ def add_event_to_project():
     except Exception as e:
         db.rollback()
         logger.error(f"添加事件到项目失败: {e}")
+        return jsonify({"error": "服务器内部错误"}), 500
+    finally:
+        db.close()
+
+@project_event_bp.route("/query_project_events", methods=["POST"])
+@login_required
+@use_kwargs(ProjectEventQuerySchema)
+def query_project_events(**kwargs):
+    """
+    查询项目事件信息接口
+    ---
+    post:
+      tags:
+        - 项目管理
+      summary: 查询项目事件信息
+      description: 根据项目编码或名称查询项目事件信息，返回主从结构数据
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: ProjectEventQuerySchema
+      responses:
+        200:
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prjcode:
+                    type: string
+                  prjname:
+                    type: string
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        eventid:
+                          type: integer
+                        reporter:
+                          type: integer
+                        reportertime:
+                          type: string
+                        event:
+                          type: string
+                        leafid:
+                          type: integer
+        500:
+          description: 服务器内部错误
+    """
+    db = SessionLocal()
+    try:
+        # 构建基础查询
+        query = db.query(
+            Project.prjcode,
+            Project.prjname,
+            Event.eventid,
+            Event.reporter,
+            Event.reportertime,
+            Event.event,
+            ProjectEvent.leafid
+        ).join(
+            ProjectEvent, Project.prjid == ProjectEvent.prjid
+        ).join(
+            Event, ProjectEvent.eventid == Event.eventid
+        ).filter(
+            ProjectEvent.status == 0  # 只查询状态正常的记录
+        )
+
+        # 处理查询条件
+        if kwargs.get("prjcode"):
+            query = query.filter(Project.prjcode == kwargs["prjcode"])
+        if kwargs.get("prjname"):
+            query = query.filter(Project.prjname.ilike(f"%{kwargs['prjname']}%"))
+
+        # 执行查询并排序
+        results = query.order_by(ProjectEvent.depth.asc()).all()
+
+        if not results:
+            return jsonify({"error": "未找到相关项目事件信息"}), 404
+
+        # 格式化返回结果
+        response = {
+            "prjcode": results[0].prjcode,
+            "prjname": results[0].prjname,
+            "events": [{
+                "eventid": r.eventid,
+                "reporter": r.reporter,
+                "reportertime": r.reportertime.isoformat() if r.reportertime else None,
+                "event": r.event,
+                "leafid": r.leafid
+            } for r in results]
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
+        logger.error(f"查询项目事件信息失败: {e}")
         return jsonify({"error": "服务器内部错误"}), 500
     finally:
         db.close() 

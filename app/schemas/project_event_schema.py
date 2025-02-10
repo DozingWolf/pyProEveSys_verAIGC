@@ -12,3 +12,10 @@ class ProjectEventCreateSchema(Schema):
     prjid = fields.Int(required=True, validate=validate.Range(min=1))
     eventid = fields.Int(required=True, validate=validate.Range(min=1))
     parentid = fields.Int(required=True, validate=validate.Range(min=0)) 
+
+class ProjectEventQuerySchema(Schema):
+    """
+    项目事件查询Schema
+    """
+    prjcode = fields.Str(required=False)  # 项目编码
+    prjname = fields.Str(required=False)  # 项目名称 
