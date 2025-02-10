@@ -51,3 +51,65 @@ class ProjectUpdateSchema(Schema):
     goal = fields.Str(required=False, validate=validate.Length(max=1000))
     expectedtime = fields.Str(required=False, validate=validate_date_format)
     status = fields.Int(required=False, validate=validate.OneOf([0, 1]))
+
+class ProjectQuerySchema(Schema):
+    """
+    项目查询参数校验 Schema
+    
+    参数:
+        prjcode (str): 项目编码，精确查询
+        prjname (str): 项目名称，模糊查询
+        ownerid (int): 项目经理ID，精确查询
+        sponsorid (int): 项目发起人ID，精确查询
+        approvetime_start (str): 项目批准时间范围查询开始日期，格式YYYY-MM-DD
+        approvetime_end (str): 项目批准时间范围查询结束日期，格式YYYY-MM-DD
+        expectedtime_start (str): 预期结束时间范围查询开始日期，格式YYYY-MM-DD
+        expectedtime_end (str): 预期结束时间范围查询结束日期，格式YYYY-MM-DD
+        status (int): 状态位，0正常，1停用
+    """
+    prjcode = fields.Str(required=False)
+    prjname = fields.Str(required=False)
+    ownerid = fields.Int(required=False, validate=validate.Range(min=1))
+    sponsorid = fields.Int(required=False, validate=validate.Range(min=1))
+    approvetime_start = fields.Str(required=False, validate=validate_date_format)
+    approvetime_end = fields.Str(required=False, validate=validate_date_format)
+    expectedtime_start = fields.Str(required=False, validate=validate_date_format)
+    expectedtime_end = fields.Str(required=False, validate=validate_date_format)
+    status = fields.Int(required=False, validate=validate.OneOf([0, 1]))
+
+class ProjectMemberCreateSchema(Schema):
+    """
+    项目成员创建接口的输入参数校验Schema
+
+    参数:
+        prjid (int): 项目ID，必须为正整数
+        empid (int): 成员ID，必须为正整数
+    """
+    prjid = fields.Int(required=True, validate=validate.Range(min=1))
+    empid = fields.Int(required=True, validate=validate.Range(min=1))
+
+class ProjectMemberRemoveSchema(Schema):
+    """
+    移除项目成员 Schema
+    
+    参数:
+        prjid (int): 项目ID，必须为正整数
+        empid (int): 成员ID，必须为正整数
+    """
+    prjid = fields.Int(required=True, validate=validate.Range(min=1))
+    empid = fields.Int(required=True, validate=validate.Range(min=1))
+
+class ProjectMemberQuerySchema(Schema):
+    """
+    项目成员查询参数校验 Schema
+    
+    参数:
+        empcode (str): 用户工号，精确查询
+        empname (str): 用户姓名，模糊查询
+        prjcode (str): 项目编码，精确查询
+        prjname (str): 项目名称，模糊查询
+    """
+    empcode = fields.Str(required=False)
+    empname = fields.Str(required=False)
+    prjcode = fields.Str(required=False)
+    prjname = fields.Str(required=False)

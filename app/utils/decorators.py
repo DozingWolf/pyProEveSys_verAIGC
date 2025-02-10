@@ -1,8 +1,9 @@
 from functools import wraps
 from flask import request, session, jsonify
-from ..models import SessionLocal, User, UserPermission, PermissionGroup  # 导入相关模型
+from ..models import SessionLocal, User, UserPermission, PermissionGroup, OperationLog  # 导入相关模型
 from ..utils.errors import BusinessError
 from loguru import logger
+from datetime import datetime
 
 def login_required(f):
     """
@@ -82,6 +83,46 @@ def permission_required(permission_name):
                 return f(*args, **kwargs)
             except Exception as e:
                 logger.error(f"Error checking permission: {e}")
+                return jsonify({"error": "Internal server error"}), 500
+            finally:
+                db.close()
+        return decorated_function
+    return decorator
+
+def operation_log(operation_name):
+    """
+    业务操作日志装饰器
+    
+    参数:
+        operation_name (str): 操作名称
+        
+    功能:
+        记录用户操作日志，包括API、操作用户、请求参数、访问时间
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            db = SessionLocal()
+            try:
+                # 获取操作信息
+                log_data = {
+                    "operation_name": operation_name,
+                    "api_path": request.path,
+                    "request_params": request.get_json() if request.is_json else request.args,
+                    "operation_time": datetime.now(),
+                    "operator_id": session.get("empid")
+                }
+                
+                # 创建日志记录
+                log_entry = OperationLog(**log_data)
+                db.add(log_entry)
+                db.commit()
+                
+                # 继续执行被装饰的函数
+                return f(*args, **kwargs)
+            except Exception as e:
+                logger.error(f"Error recording operation log: {e}")
+                db.rollback()
                 return jsonify({"error": "Internal server error"}), 500
             finally:
                 db.close()

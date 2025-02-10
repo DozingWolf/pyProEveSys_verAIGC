@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, Table
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Date, Table, JSON, DateTime
 from sqlalchemy.sql import func  # 导入 func 模块
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -153,6 +153,11 @@ class ProjectEvent(Base):
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
 
+    @staticmethod
+    def get_next_leafid(db):
+        last_record = db.query(ProjectEvent).order_by(ProjectEvent.leafid.desc()).first()
+        return last_record.leafid + 1 if last_record else 1
+
 # 项目参与者表 (TBUSPRJMEMBER)
 class ProjectMember(Base):
     __tablename__ = "TBUSPRJMEMBER"
@@ -163,3 +168,15 @@ class ProjectMember(Base):
     modifyuser = Column(Integer)  # 修改人内码
     modifydate = Column(Date)  # 修改时间
     status = Column(Integer, nullable=False, default=0)  # 状态位，0正常，1停用
+
+# 操作日志表 (operation_logs)
+class OperationLog(Base):
+    __tablename__ = 'operation_logs'
+    
+
+    id = Column(Integer, primary_key=True)
+    operation_name = Column(String(100), nullable=False)
+    api_path = Column(String(200), nullable=False)
+    request_params = Column(JSON, nullable=True)
+    operation_time = Column(DateTime, nullable=False)
+    operator_id = Column(String(50), nullable=True)
