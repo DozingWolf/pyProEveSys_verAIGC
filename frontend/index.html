@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 项目管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>项目管理系统</h1>
+            <nav>
+                <ul>
+                    <li><a href="#" id="homeLink">首页</a></li>
+                    <li><a href="#" id="projectLink">项目管理</a></li>
+                    <li><a href="#" id="eventLink">事件管理</a></li>
+                    <li><a href="#" id="userLink">用户管理</a></li>
+                    <li><a href="#" id="logoutLink">退出登录</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="dashboard">
+            <h2>欢迎回来，<span id="username"></span></h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>项目总数</h3>
+                    <p id="projectCount">加载中...</p>
+                </div>
+                <div class="stat-card">
+                    <h3>待处理事件</h3>
+                    <p id="pendingEvents">加载中...</p>
+                </div>
+                <div class="stat-card">
+                    <h3>在线用户</h3>
+                    <p id="onlineUsers">加载中...</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="recent-activities">
+            <h2>最近活动</h2>
+            <ul id="activityList">
+                <!-- 动态加载最近活动 -->
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 项目管理系统. 保留所有权利。</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="index.js"></script>
+</body>
+</html> 
