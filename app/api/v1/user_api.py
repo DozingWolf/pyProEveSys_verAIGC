@@ -296,3 +296,11 @@ def query_users(**kwargs):
         return jsonify({"error": "服务器内部错误"}), 500
     finally:
         db.close()
+
+# 定义需要生成文档的路由
+user_routes = [
+    (register, "register"),
+    (update_passwd, "update_passwd"),
+    (edit_user, "edit_user"),
+    (query_users, "query_users")
+]

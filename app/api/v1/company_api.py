@@ -4,7 +4,7 @@ from app.schemas.company_schema import CompanyCreateSchema, CompanyUpdateSchema,
 from app.utils.decorators import login_required
 from datetime import datetime
 from loguru import logger
-from webargs.flaskparser import use_kwargs
+from flask_apispec import use_kwargs
 
 # 创建Blueprint
 company_bp = Blueprint("company", __name__)
@@ -215,3 +215,10 @@ def query_companies(**kwargs):
         return jsonify({"error": "服务器内部错误"}), 500
     finally:
         db.close() 
+
+# 定义需要生成文档的路由
+company_routes = [
+    (create_company, "create_company"),
+    (edit_company, "edit_company"),
+    (query_companies, "query_companies")
+]

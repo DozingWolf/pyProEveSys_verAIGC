@@ -201,3 +201,10 @@ def query_project_events(**kwargs):
         return jsonify({"error": "服务器内部错误"}), 500
     finally:
         db.close() 
+
+# 定义需要生成文档的路由
+project_event_routes = [
+    (add_event_to_project, "add_event_to_project"),
+    (query_project_events, "query_project_events")
+]
+

@@ -183,3 +183,11 @@ def query_events(**kwargs):
         return jsonify({"error": "服务器内部错误"}), 500
     finally:
         db.close()
+
+# 定义需要生成文档的路由
+event_routes = [
+    (create_event, "create_event"),
+    (update_event, "update_event"),
+    (query_events, "query_events")
+]
+

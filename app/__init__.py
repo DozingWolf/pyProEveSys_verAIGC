@@ -37,6 +37,9 @@ from .models import Base, engine
 # 初始化数据库表
 Base.metadata.create_all(bind=engine)
 
+# 初始化 FlaskApiSpec
+docs = FlaskApiSpec(app)
+
 # 注册Blueprint
 from .api.v1.user_api import user_bp
 #from .api.v1.event_api import event_bp
@@ -58,4 +61,35 @@ app.register_blueprint(event_bp, url_prefix="/api/v1.0/BUS")  # 注册事件管�
 app.register_blueprint(project_bp, url_prefix="/api/v1.0/BUS")  # 注册项目管理接口
 app.register_blueprint(company_bp, url_prefix="/api/v1.0/MST")  # 注册公司管理接口
 app.register_blueprint(project_event_bp, url_prefix="/api/v1.0/BUS")  # 注册项目事件管理接口
-docs = FlaskApiSpec(app)
+
+# 注册API文档
+from .api.v1.user_api import user_routes
+from .api.v1.auth_api import auth_routes
+from .api.v1.project_api import project_routes
+from .api.v1.event_api import event_routes
+from .api.v1.company_api import company_routes
+from .api.v1.project_event_api import project_event_routes
+
+# 注册用户相关API文档
+for route,path in user_routes:
+    docs.register(route, endpoint=path, blueprint='user')
+
+# # 注册认证相关API文档
+for route,path in auth_routes:
+    docs.register(route, endpoint=path,blueprint='auth')
+
+# # 注册项目相关API文档
+for route,path in project_routes:
+    docs.register(route, endpoint=path, blueprint='project')
+
+# # 注册事件相关API文档
+for route,path in event_routes:
+    docs.register(route, endpoint=path, blueprint='event')
+
+# # 注册公司相关API文档
+for route,path in company_routes:
+    docs.register(route, endpoint=path, blueprint='company')
+
+# # 注册项目事件相关API文档
+for route,path in project_event_routes:
+    docs.register(route, endpoint=path, blueprint='project_event')

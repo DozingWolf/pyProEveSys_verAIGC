@@ -447,3 +447,13 @@ def query_project_members(**kwargs):
         return jsonify({"error": "服务器内部错误"}), 500
     finally:
         db.close()
+
+# 定义需要生成文档的路由
+project_routes = [
+    (create_project, "create_project"),
+    (update_project, "update_project"),
+    (query_projects, "query_projects"),
+    (add_project_member, "add_project_member"),
+    (remove_project_member, "remove_project_member"),
+    (query_project_members, "query_project_members")
+]

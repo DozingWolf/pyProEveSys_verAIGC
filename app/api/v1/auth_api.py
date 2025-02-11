@@ -226,3 +226,10 @@ def user_logout():
     except Exception as e:
         logger.error(f"登出错误: {e}")
         return jsonify({"error": "服务器内部错误"}), 500
+
+# 定义需要生成文档的路由
+auth_routes = [
+    (get_captcha, "get_captcha"),
+    (login, "login"),
+    (user_logout, "user_logout")
+]

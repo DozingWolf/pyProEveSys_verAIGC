@@ -72,3 +72,9 @@ def init_admin():
         return jsonify({"error": "Internal server error"}), 500
     finally:
         db.close()
+
+# 定义需要生成文档的路由
+init_routes = [
+    (init_admin, "init_admin")
+]
+
