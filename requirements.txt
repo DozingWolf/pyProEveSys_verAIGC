@@ -1,0 +1,9 @@
+apispec==6.8.1
+Flask==3.1.0
+flask_apispec==0.11.4
+loguru==0.7.2
+marshmallow==3.26.1
+Pillow==11.1.0
+pycryptodome==3.21.0
+SQLAlchemy==1.4.31
+Werkzeug==3.1.3
